@@ -424,7 +424,6 @@ const sphereMaterial = new THREE.MeshStandardMaterial({
     roughness: 0.7,
     transparent: true,
     opacity: 0,
-    // envMap: environmentMapTexture,
 });
 
 const radius = 0.5;
