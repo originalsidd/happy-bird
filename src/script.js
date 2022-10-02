@@ -185,7 +185,7 @@ const ceilMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(50, 20, 20, 10),
     new THREE.MeshStandardMaterial({
         color: '#999922',
-        metalness: 0.1,
+        metalness: 0.2,
         roughness: 0.8,
         wireframe: true,
     })
