@@ -2,8 +2,17 @@ import './style.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
 import * as dat from 'lil-gui';
 import * as CANNON from 'cannon-es';
+import Stats from 'stats.js';
+
+/**
+ * FPS Panel
+ */
+const stats = new Stats();
+stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+document.body.appendChild(stats.dom);
 
 /**
  * Constants
@@ -46,40 +55,80 @@ const scene = new THREE.Scene();
  */
 const gltfLoader = new GLTFLoader();
 let birdGltfMesh = null;
+let buildGltfMesh = null;
 let cityMesh1 = null;
 let cityMesh2 = null;
 let mixer = null;
+let helper = null;
 
 gltfLoader.load('/models/crow/scene.gltf', (gltf) => {
     birdGltfMesh = gltf.scene;
     mixer = new THREE.AnimationMixer(birdGltfMesh);
     const action = mixer.clipAction(gltf.animations[0]);
     // action.setDuration(1);
-    // action.play();
+    action.play();
     // action.startAt(-7);
     birdGltfMesh.scale.set(0.025, 0.025, 0.025);
     birdGltfMesh.rotation.y = Math.PI * 0.5;
+    // console.log(birdMesh.position, birdGltfMesh.position);
     birdGltfMesh.castShadow = true;
     scene.add(birdGltfMesh);
-    // birdGltfMesh.receiveShadow = true;
 });
 
-gltfLoader.load('/models/city/uploads_files_3630650_city.glb', (gltf) => {
-    cityMesh1 = gltf.scene;
-    cityMesh1.scale.set(10, 10, 10);
-    cityMesh1.position.z = -400;
-    // cityMesh1.castShadow = true;
-    scene.add(cityMesh1);
-});
+// gltfLoader.load('/models/building2/buildings.glb', (gltf) => {
+//     buildGltfMesh = gltf.scene;
+//     buildGltfMesh.scale.set(2, 2, 2);
+//     buildGltfMesh.position.z = -100;
+//     buildGltfMesh.position.y = -50;
+//     buildGltfMesh.rotation.y = Math.PI * 0.5;
+//     buildGltfMesh.castShadow = true;
+//     buildGltfMesh.children[0].castShadow = true;
+//     buildGltfMesh.children[1].castShadow = true;
+//     buildGltfMesh.children[1].children[0].castShadow = true;
+//     buildGltfMesh.children[1].children[1].castShadow = true;
+//     buildGltfMesh.children[1].children[2].castShadow = true;
+//     buildGltfMesh.children[1].children[0].metalness = 1;
+//     buildGltfMesh.children[1].children[0].metalness = 1;
+//     buildGltfMesh.children[1].children[1].metalness = 1;
+//     buildGltfMesh.children[1].children[1].roughness = 0;
+//     buildGltfMesh.children[1].children[2].roughness = 0;
+//     buildGltfMesh.children[1].children[2].roughness = 0;
+//     buildGltfMesh.children[2].castShadow = true;
+//     buildGltfMesh.children[3].castShadow = true;
+//     buildGltfMesh.children[4].castShadow = true;
+//     buildGltfMesh.children[5].castShadow = true;
+//     buildGltfMesh.children[0].receiveShadow = true;
+//     buildGltfMesh.children[1].receiveShadow = true;
+//     buildGltfMesh.children[2].receiveShadow = true;
+//     buildGltfMesh.children[3].receiveShadow = true;
+//     scene.add(buildGltfMesh);
+// });
 
-gltfLoader.load('/models/city/uploads_files_3630650_city.glb', (gltf) => {
-    cityMesh2 = gltf.scene;
-    cityMesh2.scale.set(10, 10, 10);
-    cityMesh2.position.z = -400;
-    cityMesh2.position.x = 600;
-    // cityMesh2.castShadow = true;
-    scene.add(cityMesh2);
-});
+// gltfLoader.load('/models/building3/untitled.glb', (gltf) => {
+//     buildGltfMesh = gltf.scene;
+//     // buildGltfMesh.scale.set(0.025, 0.025, 0.025);
+//     buildGltfMesh.position.z = -200;
+//     buildGltfMesh.position.y = -100;
+//     // buildGltfMesh.castShadow = true;
+//     scene.add(buildGltfMesh);
+// });
+
+// gltfLoader.load('/models/city/uploads_files_3630650_city.glb', (gltf) => {
+//     cityMesh1 = gltf.scene;
+//     cityMesh1.scale.set(10, 10, 10);
+//     cityMesh1.position.z = -400;
+//     // cityMesh1.castShadow = true;
+//     scene.add(cityMesh1);
+// });
+
+// gltfLoader.load('/models/city/uploads_files_3630650_city.glb', (gltf) => {
+//     cityMesh2 = gltf.scene;
+//     cityMesh2.scale.set(10, 10, 10);
+//     cityMesh2.position.z = -400;
+//     cityMesh2.position.x = 600;
+//     // cityMesh2.castShadow = true;
+//     scene.add(cityMesh2);
+// });
 
 /**
  * Sounds
@@ -100,6 +149,31 @@ const environmentMapTexture = cubeTextureLoader.load([
     `/textures/environmentMaps/3/pz.png`,
     `/textures/environmentMaps/3/nz.png`,
 ]);
+
+/**
+ * Skybox
+ */
+const skyboxMaterial = [];
+const skyboxTexture_ft = textureLoader.load('./textures/skybox/bay_ft.jpg');
+const skyboxTexture_bk = textureLoader.load('./textures/skybox/bay_bk.jpg');
+const skyboxTexture_up = textureLoader.load('./textures/skybox/bay_up.jpg');
+const skyboxTexture_dn = textureLoader.load('./textures/skybox/bay_dn.jpg');
+const skyboxTexture_rt = textureLoader.load('./textures/skybox/bay_rt.jpg');
+const skyboxTexture_lt = textureLoader.load('./textures/skybox/bay_lf.jpg');
+skyboxMaterial.push(new THREE.MeshBasicMaterial({ map: skyboxTexture_ft }));
+skyboxMaterial.push(new THREE.MeshBasicMaterial({ map: skyboxTexture_bk }));
+skyboxMaterial.push(new THREE.MeshBasicMaterial({ map: skyboxTexture_up }));
+skyboxMaterial.push(new THREE.MeshBasicMaterial({ map: skyboxTexture_dn }));
+skyboxMaterial.push(new THREE.MeshBasicMaterial({ map: skyboxTexture_rt }));
+skyboxMaterial.push(new THREE.MeshBasicMaterial({ map: skyboxTexture_lt }));
+
+for (let i = 0; i < skyboxMaterial.length; i++)
+    skyboxMaterial[i].side = THREE.BackSide;
+
+const skyboxGeometry = new THREE.BoxBufferGeometry(1500, 1500, 1500);
+const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+scene.add(skybox);
+skybox.position.y = -150;
 
 /**
  * Physics
@@ -155,7 +229,7 @@ world.addBody(ceilBody);
 const floorMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(50, 20),
     new THREE.MeshStandardMaterial({
-        color: '#229922',
+        color: '#666666',
         metalness: 0.3,
         roughness: 0.4,
         // envMap: environmentMapTexture,
@@ -170,7 +244,7 @@ scene.add(floorMesh);
 const seaMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(800, 500),
     new THREE.MeshStandardMaterial({
-        color: '#2244dd',
+        color: '#2266ff',
         metalness: 0.8,
         roughness: 0.2,
         envMap: environmentMapTexture,
@@ -179,7 +253,7 @@ const seaMesh = new THREE.Mesh(
 );
 seaMesh.rotation.x = -Math.PI * 0.5;
 seaMesh.position.set(0, parameters.floorHeight - 5, -100);
-scene.add(seaMesh);
+// scene.add(seaMesh);
 
 const ceilMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(50, 20, 20, 10),
@@ -323,19 +397,26 @@ createPillars();
 /**
  * Lights
  */
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
 directionalLight.castShadow = true;
 directionalLight.shadow.mapSize.set(1024, 1024);
-directionalLight.shadow.camera.far = 30;
-directionalLight.shadow.camera.left = -15;
-directionalLight.shadow.camera.top = 15;
-directionalLight.shadow.camera.right = 15;
-directionalLight.shadow.camera.bottom = -15;
-directionalLight.position.set(-3, 5, -3);
+directionalLight.shadow.camera.far = 400;
+directionalLight.shadow.camera.left = -200;
+directionalLight.shadow.camera.top = 100;
+directionalLight.shadow.camera.right = 200;
+directionalLight.shadow.camera.bottom = -100;
+directionalLight.position.set(50, 50, -200);
+directionalLight.target.position.set(0, 0, 0);
 scene.add(directionalLight);
+scene.add(directionalLight.target);
+
+// const directionalLightHelper = new THREE.DirectionalLightHelper(
+//     directionalLight
+// );
+// scene.add(directionalLightHelper);
 
 /**
  * Sizes
@@ -384,16 +465,16 @@ window.addEventListener('dblclick', () => {
 // Base camera
 const camera = new THREE.PerspectiveCamera(
     55,
-    sizes.width / sizes.height,
-    0.1,
-    500
+    sizes.width / sizes.height
+    // 0.1,
+    // 500
 );
 camera.position.set(0, 0, 9);
 scene.add(camera);
 
 // Controls
-// const controls = new OrbitControls(camera, canvas);
-// controls.enableDamping = true;
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
 
 /**
  * Renderer
@@ -405,7 +486,7 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setClearColor('#0099cc');
+// renderer.setClearColor('#0099cc');
 
 const playHitSound = (collision) => {
     // const impactStrength = collision.contact.getImpactVelocityAlongNormal();
@@ -418,12 +499,14 @@ const playHitSound = (collision) => {
  */
 
 // Sphere
-const sphereGeometry = new THREE.SphereBufferGeometry(1, 20, 20);
+const sphereGeometry = new THREE.SphereBufferGeometry(1, 6, 6);
 const sphereMaterial = new THREE.MeshStandardMaterial({
     metalness: 0.4,
     roughness: 0.7,
     transparent: true,
-    opacity: 0,
+    color: '#ff0000',
+    wireframe: true,
+    // visible: false,
 });
 
 const radius = 0.5;
@@ -431,11 +514,12 @@ const radius = 0.5;
 // Three.js birdBody
 const birdMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
 birdMesh.scale.set(radius, radius, radius);
-if (birdGltfMesh) {
-    birdGltfMesh.position.copy(birdMesh.position);
-}
+// if (birdGltfMesh) {
+//     birdGltfMesh.position.copy(birdMesh.position);
+// }
 birdMesh.position.set(0, 0, 0);
 birdMesh.castShadow = true;
+gui.add(birdMesh, 'visible');
 scene.add(birdMesh);
 
 // Cannon.js birdBody
@@ -472,7 +556,7 @@ document.body.onkeyup = (e) => {
             // new CANNON.Vec3(0, 0, 0)
             birdBody.position
         );
-        birdGltfMesh.position.x = 0;
+        birdGltfMesh.position.x = -0.5;
         birdGltfMesh.rotation.z = 0.1;
     }
     if (e.keyCode == 'R'.charCodeAt(0)) {
@@ -493,27 +577,30 @@ const clock = new THREE.Clock();
 let oldElapsedTime = 0;
 
 const tick = () => {
+    stats.begin();
     const elapsedTime = clock.getElapsedTime();
     const deltaTime = elapsedTime - oldElapsedTime;
     oldElapsedTime = elapsedTime;
 
     // Update physics world
     world.step(1 / 60, deltaTime, 3);
-    if (buildingMesh.position.x < -parameters.boundary * 3)
-        buildingMesh.position.x = parameters.boundary * 3;
-    buildingMesh.position.x -= deltaTime * parameters.speed;
-    if (cityMesh1) {
-        if (cityMesh1.position.x < -parameters.boundary * 30) {
-            cityMesh1.position.x = 600;
-        }
-        cityMesh1.position.x -= deltaTime * parameters.speed;
-    }
-    if (cityMesh2) {
-        if (cityMesh2.position.x < -parameters.boundary * 30) {
-            cityMesh2.position.x = 600;
-        }
-        cityMesh2.position.x -= deltaTime * parameters.speed;
-    }
+
+    // Moving Background
+    // if (buildingMesh.position.x < -parameters.boundary * 3)
+    //     buildingMesh.position.x = parameters.boundary * 3;
+    // buildingMesh.position.x -= deltaTime * parameters.speed;
+    // if (buildGltfMesh) {
+    //     if (buildGltfMesh.position.x < -parameters.boundary * 30) {
+    //         buildGltfMesh.position.x = 600;
+    //     }
+    //     buildGltfMesh.position.x -= deltaTime * parameters.speed;
+    // }
+    // if (cityMesh2) {
+    //     if (cityMesh2.position.x < -parameters.boundary * 30) {
+    //         cityMesh2.position.x = 600;
+    //     }
+    //     // cityMesh2.position.x -= deltaTime * parameters.speed;
+    // }
 
     if (pillar1Body.position.x < -parameters.boundary) {
         createPillars();
@@ -528,7 +615,7 @@ const tick = () => {
     birdBody.quaternion.x = 0;
     birdBody.quaternion.y = 0;
     birdBody.quaternion.z = 0;
-    // birdBody.position.z = 5;
+    birdBody.position.z = -5;
     birdMesh.position.copy(birdBody.position);
 
     pillar1Body.position.z = 0;
@@ -536,31 +623,36 @@ const tick = () => {
     pillar1Mesh.position.copy(pillar1Body.position);
     pillar2Mesh.position.copy(pillar2Body.position);
     pillar2Mesh.quaternion.copy(pillar2Body.quaternion);
-    // birdMesh.rotation.x = elapsedTime;
-    birdGltfMesh?.position.set(
-        -0.5,
-        birdMesh.position.y + 1.3,
-        birdMesh.position.z
-    );
-    // birdGltfMesh?.quaternion.copy(birdMesh.quaternion);
+    if (birdGltfMesh) {
+        birdGltfMesh.position.y = birdBody.position.y + 1.3;
+        birdGltfMesh.position.z = birdBody.position.z;
+        // // birdGltfMesh.quaternion.copy(birdMesh.quaternion);
+        // birdGltfMesh.rotation.y = Math.PI * 0.5;
+        // birdGltfMesh.rotation.x += deltaTime * 0.2;
+        // birdGltfMesh.position.x += deltaTime * 0.01;
+    }
 
     // Update controls
-    camera.position.y = birdBody.position.y / 1.5;
-    // controls.update();
+    // camera.position.y = birdBody.position.y / 1.5;
+    controls.update();
+
+    // directionalLightHelper.update();
 
     // Animation Controls
     mixer?.update(deltaTime);
 
     // Bird Rotation Animation
     // birdGltfMesh?.rotation.y = Math.PI * 0.5;
-    if (birdGltfMesh) {
-        birdGltfMesh.rotation.y = Math.PI * 0.5;
-        birdGltfMesh.rotation.z -= deltaTime * 0.2;
-        // birdGltfMesh.position.y = -elapsedTime * 1.5;
-    }
+    // if (birdGltfMesh) {
+    //     birdGltfMesh.rotation.y = Math.PI * 0.5;
+    //     birdGltfMesh.rotation.z -= deltaTime * 0.2;
+    //     // birdGltfMesh.position.y = -elapsedTime * 1.5;
+    // }
 
     // Render
     renderer.render(scene, camera);
+
+    if (helper) helper.update();
 
     // Call tick again on the next frame
     // window.requestAnimationFrame(tick);
@@ -584,8 +676,9 @@ const tick = () => {
         pillar1Body.position.copy(pillar1Mesh.position);
         pillar2Body.position.copy(pillar2Mesh.position);
     }
+    stats.end();
 };
 
 tick();
 
-// 500 lines!
+// 700 lines!
