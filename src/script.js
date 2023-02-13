@@ -2,6 +2,7 @@ import './style.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 
 import * as dat from 'lil-gui';
 import * as CANNON from 'cannon-es';
@@ -18,11 +19,12 @@ document.body.appendChild(stats.dom);
  * Constants
  */
 const parameters = {
+    radius: 0.4,
     speed: 5,
     boundary: 15,
-    floorHeight: -5,
-    ceilHeight: 5,
-    pillarWindow: 4,
+    floorHeight: -9,
+    ceilHeight: 9,
+    pillarWindow: 12,
     impulseValue: 25,
 };
 
@@ -49,15 +51,17 @@ const canvas = document.querySelector('canvas.webgl');
 
 // Scene
 const scene = new THREE.Scene();
+const textureLoader = new THREE.TextureLoader();
 
 /**
  * Models
  */
 const gltfLoader = new GLTFLoader();
+const objloader = new OBJLoader();
 let birdGltfMesh = null;
-let buildGltfMesh = null;
-let cityMesh1 = null;
-let cityMesh2 = null;
+let roadMesh = null;
+let cityMesh = null;
+// let treeMesh = null;
 let mixer = null;
 let helper = null;
 
@@ -75,70 +79,49 @@ gltfLoader.load('/models/crow/scene.gltf', (gltf) => {
     scene.add(birdGltfMesh);
 });
 
-// gltfLoader.load('/models/building2/buildings.glb', (gltf) => {
-//     buildGltfMesh = gltf.scene;
-//     buildGltfMesh.scale.set(2, 2, 2);
-//     buildGltfMesh.position.z = -100;
-//     buildGltfMesh.position.y = -50;
-//     buildGltfMesh.rotation.y = Math.PI * 0.5;
-//     buildGltfMesh.castShadow = true;
-//     buildGltfMesh.children[0].castShadow = true;
-//     buildGltfMesh.children[1].castShadow = true;
-//     buildGltfMesh.children[1].children[0].castShadow = true;
-//     buildGltfMesh.children[1].children[1].castShadow = true;
-//     buildGltfMesh.children[1].children[2].castShadow = true;
-//     buildGltfMesh.children[1].children[0].metalness = 1;
-//     buildGltfMesh.children[1].children[0].metalness = 1;
-//     buildGltfMesh.children[1].children[1].metalness = 1;
-//     buildGltfMesh.children[1].children[1].roughness = 0;
-//     buildGltfMesh.children[1].children[2].roughness = 0;
-//     buildGltfMesh.children[1].children[2].roughness = 0;
-//     buildGltfMesh.children[2].castShadow = true;
-//     buildGltfMesh.children[3].castShadow = true;
-//     buildGltfMesh.children[4].castShadow = true;
-//     buildGltfMesh.children[5].castShadow = true;
-//     buildGltfMesh.children[0].receiveShadow = true;
-//     buildGltfMesh.children[1].receiveShadow = true;
-//     buildGltfMesh.children[2].receiveShadow = true;
-//     buildGltfMesh.children[3].receiveShadow = true;
-//     scene.add(buildGltfMesh);
+// gltfLoader.load('/models/tree/tree.glb', (glb) => {
+//     treeMesh = glb.scene;
+//     treeMesh.scale.set(2, 2, 2);
+//     treeMesh.position.y = -10;
+//     treeMesh.castShadow = true;
+//     scene.add(treeMesh);
 // });
 
-// gltfLoader.load('/models/building3/untitled.glb', (gltf) => {
-//     buildGltfMesh = gltf.scene;
-//     // buildGltfMesh.scale.set(0.025, 0.025, 0.025);
-//     buildGltfMesh.position.z = -200;
-//     buildGltfMesh.position.y = -100;
-//     // buildGltfMesh.castShadow = true;
-//     scene.add(buildGltfMesh);
+// gltfLoader.load('/models/road/uploads_files_3624686_11.glb', (glb) => {
+//     roadMesh = glb.scene;
+//     roadMesh.scale.set(15, 15, 15);
+//     let r = 60;
+//     roadMesh.rotation.y = Math.PI + 0.003;
+//     roadMesh.position.set(r * -50, r * -12.07, r * -33.6);
+//     scene.add(roadMesh);
 // });
 
-// gltfLoader.load('/models/city/uploads_files_3630650_city.glb', (gltf) => {
-//     cityMesh1 = gltf.scene;
-//     cityMesh1.scale.set(10, 10, 10);
-//     cityMesh1.position.z = -400;
-//     // cityMesh1.castShadow = true;
-//     scene.add(cityMesh1);
-// });
+const cityTexture1 = textureLoader.load('/textures/city/ang1.jpg');
+const cityTexture2 = textureLoader.load('/textures/city/cty1.jpg');
+const cityTexture3 = textureLoader.load('/textures/city/cty2x.jpg');
 
-// gltfLoader.load('/models/city/uploads_files_3630650_city.glb', (gltf) => {
-//     cityMesh2 = gltf.scene;
-//     cityMesh2.scale.set(10, 10, 10);
-//     cityMesh2.position.z = -400;
-//     cityMesh2.position.x = 600;
-//     // cityMesh2.castShadow = true;
-//     scene.add(cityMesh2);
-// });
+objloader.load('/models/road/city.obj', (obj) => {
+    cityMesh = obj;
+    console.log(cityMesh);
+    cityMesh.children[0].material[0].map = cityTexture2;
+    cityMesh.children[0].material[1].map = cityTexture1;
+    cityMesh.children[1].material.map = cityTexture2;
+    cityMesh.children[2].material.transparent = 1;
+    cityMesh.position.y = -100;
+    cityMesh.position.x = 100;
+    cityMesh.scale.set(0.4, 0.4, 0.4);
+    scene.add(cityMesh);
+});
 
 /**
  * Sounds
  */
-const hitSound = new Audio('/sounds/hit.mp3');
+// const hitSound = new Audio('/sounds/hit.mp3');
 
 /**
  * Textures
  */
-const textureLoader = new THREE.TextureLoader();
+
 const cubeTextureLoader = new THREE.CubeTextureLoader();
 
 const environmentMapTexture = cubeTextureLoader.load([
@@ -154,12 +137,24 @@ const environmentMapTexture = cubeTextureLoader.load([
  * Skybox
  */
 const skyboxMaterial = [];
-const skyboxTexture_ft = textureLoader.load('./textures/skybox/bay_ft.jpg');
-const skyboxTexture_bk = textureLoader.load('./textures/skybox/bay_bk.jpg');
-const skyboxTexture_up = textureLoader.load('./textures/skybox/bay_up.jpg');
-const skyboxTexture_dn = textureLoader.load('./textures/skybox/bay_dn.jpg');
-const skyboxTexture_rt = textureLoader.load('./textures/skybox/bay_rt.jpg');
-const skyboxTexture_lt = textureLoader.load('./textures/skybox/bay_lf.jpg');
+const skyboxTexture_ft = textureLoader.load(
+    './textures/skybox3/bluecloud_ft.jpg'
+);
+const skyboxTexture_bk = textureLoader.load(
+    './textures/skybox3/bluecloud_bk.jpg'
+);
+const skyboxTexture_up = textureLoader.load(
+    './textures/skybox3/bluecloud_up.jpg'
+);
+const skyboxTexture_dn = textureLoader.load(
+    './textures/skybox3/bluecloud_dn.jpg'
+);
+const skyboxTexture_rt = textureLoader.load(
+    './textures/skybox3/bluecloud_rt.jpg'
+);
+const skyboxTexture_lt = textureLoader.load(
+    './textures/skybox3/bluecloud_lf.jpg'
+);
 skyboxMaterial.push(new THREE.MeshBasicMaterial({ map: skyboxTexture_ft }));
 skyboxMaterial.push(new THREE.MeshBasicMaterial({ map: skyboxTexture_bk }));
 skyboxMaterial.push(new THREE.MeshBasicMaterial({ map: skyboxTexture_up }));
@@ -170,7 +165,7 @@ skyboxMaterial.push(new THREE.MeshBasicMaterial({ map: skyboxTexture_lt }));
 for (let i = 0; i < skyboxMaterial.length; i++)
     skyboxMaterial[i].side = THREE.BackSide;
 
-const skyboxGeometry = new THREE.BoxBufferGeometry(1500, 1500, 1500);
+const skyboxGeometry = new THREE.BoxBufferGeometry(2000, 2000, 2000);
 const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
 scene.add(skybox);
 skybox.position.y = -150;
@@ -227,13 +222,14 @@ world.addBody(ceilBody);
  */
 
 const floorMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(50, 20),
+    new THREE.PlaneGeometry(50, 20, 20, 10),
     new THREE.MeshStandardMaterial({
-        color: '#666666',
+        color: '#bb2236',
         metalness: 0.3,
         roughness: 0.4,
         // envMap: environmentMapTexture,
         envMapIntensity: 0.5,
+        wireframe: true,
     })
 );
 floorMesh.receiveShadow = true;
@@ -297,6 +293,23 @@ const pillarMaterial = new THREE.MeshStandardMaterial({
     envMap: environmentMapTexture,
     envMapIntensity: 0.6,
 });
+
+// const pillarObj = [
+//     // material
+//     new THREE.MeshStandardMaterial({
+//         color: '#747474',
+//         metalness: 0.7,
+//         roughness: 0.3,
+//         envMap: environmentMapTexture,
+//         envMapIntensity: 0.6,
+//     }),
+//     // geometry
+//     null,
+//     // mesh
+//     null,
+// ];
+
+// const pillars = [pillarObj, pillarObj, pillarObj];
 
 // Geometry
 let pillar1Geometry = null;
@@ -400,7 +413,7 @@ createPillars();
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
 directionalLight.castShadow = true;
 directionalLight.shadow.mapSize.set(1024, 1024);
 directionalLight.shadow.camera.far = 400;
@@ -408,15 +421,15 @@ directionalLight.shadow.camera.left = -200;
 directionalLight.shadow.camera.top = 100;
 directionalLight.shadow.camera.right = 200;
 directionalLight.shadow.camera.bottom = -100;
-directionalLight.position.set(50, 50, -200);
+directionalLight.position.set(10, 100, 50);
 directionalLight.target.position.set(0, 0, 0);
 scene.add(directionalLight);
 scene.add(directionalLight.target);
 
-// const directionalLightHelper = new THREE.DirectionalLightHelper(
-//     directionalLight
-// );
-// scene.add(directionalLightHelper);
+const directionalLightHelper = new THREE.DirectionalLightHelper(
+    directionalLight
+);
+scene.add(directionalLightHelper);
 
 /**
  * Sizes
@@ -469,12 +482,12 @@ const camera = new THREE.PerspectiveCamera(
     // 0.1,
     // 500
 );
-camera.position.set(0, 0, 9);
+camera.position.set(0, 0, 20);
 scene.add(camera);
 
 // Controls
 const controls = new OrbitControls(camera, canvas);
-controls.enableDamping = true;
+// controls.enableDamping = true;
 
 /**
  * Renderer
@@ -490,8 +503,8 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 const playHitSound = (collision) => {
     // const impactStrength = collision.contact.getImpactVelocityAlongNormal();
-    hitSound.currentTime = 0;
-    hitSound.play();
+    // hitSound.currentTime = 0;
+    // hitSound.play();
 };
 
 /**
@@ -509,7 +522,7 @@ const sphereMaterial = new THREE.MeshStandardMaterial({
     // visible: false,
 });
 
-const radius = 0.5;
+const radius = parameters.radius;
 
 // Three.js birdBody
 const birdMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
@@ -556,8 +569,8 @@ document.body.onkeyup = (e) => {
             // new CANNON.Vec3(0, 0, 0)
             birdBody.position
         );
-        birdGltfMesh.position.x = -0.5;
-        birdGltfMesh.rotation.z = 0.1;
+        // birdGltfMesh.position.x = -0.5;
+        // birdGltfMesh.rotation.z = 0.1;
     }
     if (e.keyCode == 'R'.charCodeAt(0)) {
         bool = true;
@@ -586,21 +599,9 @@ const tick = () => {
     world.step(1 / 60, deltaTime, 3);
 
     // Moving Background
-    // if (buildingMesh.position.x < -parameters.boundary * 3)
-    //     buildingMesh.position.x = parameters.boundary * 3;
-    // buildingMesh.position.x -= deltaTime * parameters.speed;
-    // if (buildGltfMesh) {
-    //     if (buildGltfMesh.position.x < -parameters.boundary * 30) {
-    //         buildGltfMesh.position.x = 600;
-    //     }
-    //     buildGltfMesh.position.x -= deltaTime * parameters.speed;
-    // }
-    // if (cityMesh2) {
-    //     if (cityMesh2.position.x < -parameters.boundary * 30) {
-    //         cityMesh2.position.x = 600;
-    //     }
-    //     // cityMesh2.position.x -= deltaTime * parameters.speed;
-    // }
+
+    if (roadMesh) roadMesh.position.x -= deltaTime * parameters.speed;
+    if (cityMesh) cityMesh.position.x -= deltaTime * parameters.speed;
 
     if (pillar1Body.position.x < -parameters.boundary) {
         createPillars();
@@ -609,13 +610,12 @@ const tick = () => {
     pillar2Body.position.x -= deltaTime * parameters.speed;
 
     // Update threejs world
-    birdGltfMesh?.rotation.reorder('ZYX');
+    // birdGltfMesh?.rotation.reorder('ZYX');
     birdBody.position.x = 0;
     birdBody.position.z = 0;
     birdBody.quaternion.x = 0;
     birdBody.quaternion.y = 0;
     birdBody.quaternion.z = 0;
-    birdBody.position.z = -5;
     birdMesh.position.copy(birdBody.position);
 
     pillar1Body.position.z = 0;
@@ -636,18 +636,10 @@ const tick = () => {
     // camera.position.y = birdBody.position.y / 1.5;
     controls.update();
 
-    // directionalLightHelper.update();
+    directionalLightHelper.update();
 
     // Animation Controls
     mixer?.update(deltaTime);
-
-    // Bird Rotation Animation
-    // birdGltfMesh?.rotation.y = Math.PI * 0.5;
-    // if (birdGltfMesh) {
-    //     birdGltfMesh.rotation.y = Math.PI * 0.5;
-    //     birdGltfMesh.rotation.z -= deltaTime * 0.2;
-    //     // birdGltfMesh.position.y = -elapsedTime * 1.5;
-    // }
 
     // Render
     renderer.render(scene, camera);
@@ -656,26 +648,7 @@ const tick = () => {
 
     // Call tick again on the next frame
     // window.requestAnimationFrame(tick);
-    if (bool) window.requestAnimationFrame(tick);
-    else {
-        world.removeBody(birdBody);
-        world.addBody(birdBody);
-        buildingMesh.position.x = parameters.boundary * 3;
-        birdMesh.position.set(0, 0, 0);
-        birdBody.position.copy(birdMesh.position);
-        pillar1Mesh.position.set(
-            parameters.boundary,
-            parameters.ceilHeight - pillar1Height / 2,
-            0
-        );
-        pillar2Mesh.position.set(
-            parameters.boundary,
-            parameters.floorHeight + pillar2Height / 2,
-            0
-        );
-        pillar1Body.position.copy(pillar1Mesh.position);
-        pillar2Body.position.copy(pillar2Mesh.position);
-    }
+    window.requestAnimationFrame(tick);
     stats.end();
 };
 
