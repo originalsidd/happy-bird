@@ -5,16 +5,21 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
 
-import * as dat from 'lil-gui';
+// import * as dat from 'lil-gui';
 import * as CANNON from 'cannon-es';
-import Stats from 'stats.js';
+// import Stats from 'stats.js';
+
+const playScreen = document.querySelector('.play');
+const replayScreen = document.querySelector('.replay');
+const btn = document.querySelector('.button');
+const score = document.querySelector('.score');
 
 /**
  * FPS Panel
  */
-const stats = new Stats();
-stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
-document.body.appendChild(stats.dom);
+// const stats = new Stats();
+// stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+// document.body.appendChild(stats.dom);
 
 /**
  * Constants
@@ -35,14 +40,14 @@ const parameters = {
 /**
  * Debug
  */
-const gui = new dat.GUI();
-gui.add(parameters, 'speed').min(0).max(100).step(1);
-gui.add(parameters, 'boundary').min(10).max(30).step(1);
-gui.add(parameters, 'floorHeight').min(-10).max(-5).step(1);
-gui.add(parameters, 'ceilHeight').min(5).max(20).step(1);
-gui.add(parameters, 'pillarWindow').min(0).max(25).step(1);
-gui.add(parameters, 'impulseValue').min(10).max(50).step(1);
-gui.add(parameters, 'jumpVelocity').min(10).max(20).step(1);
+// const gui = new dat.GUI();
+// gui.add(parameters, 'speed').min(0).max(100).step(1);
+// gui.add(parameters, 'boundary').min(10).max(30).step(1);
+// gui.add(parameters, 'floorHeight').min(-10).max(-5).step(1);
+// gui.add(parameters, 'ceilHeight').min(5).max(20).step(1);
+// gui.add(parameters, 'pillarWindow').min(0).max(25).step(1);
+// gui.add(parameters, 'impulseValue').min(10).max(50).step(1);
+// gui.add(parameters, 'jumpVelocity').min(10).max(20).step(1);
 
 const stop = () => {
     bool = false;
@@ -390,7 +395,7 @@ const camera = new THREE.PerspectiveCamera(
     0.1,
     5000
 );
-const camDist = window.innerWidth < 800 ? 30 : 15;
+const camDist = window.innerWidth < 800 ? 40 : 15;
 camera.position.set(0, 0, camDist);
 scene.add(camera);
 
@@ -821,7 +826,7 @@ birdMesh.scale.set(radius, radius, radius);
 // }
 birdMesh.position.set(0, 3, 0);
 birdMesh.castShadow = true;
-gui.add(birdMesh, 'visible');
+// gui.add(birdMesh, 'visible');
 scene.add(birdMesh);
 
 // Cannon.js birdBody
@@ -843,6 +848,7 @@ let gravityFlag = false;
 
 const jumpButton = () => {
     if (bool) {
+        playScreen.style.display = 'none';
         if (!gravityFlag) {
             // fun = setTimeout(() => {
             //     createPillars();
@@ -868,6 +874,8 @@ const restartButton = () => {
         bufferx = 50;
         tick();
         bufferx = 0;
+        replayScreen.style.display = 'none';
+        playScreen.style.display = 'flex';
     }
 };
 
@@ -892,10 +900,14 @@ parameters.restart = () => {
     restartButton();
 };
 
+btn.onclick = () => {
+    restartButton();
+};
+
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-gui.add(parameters, 'jump');
-gui.add(parameters, 'restart');
+// gui.add(parameters, 'jump');
+// gui.add(parameters, 'restart');
 
 // scene.fog = new THREE.Fog(0x777777f0, 1000, 1200);
 renderer.setClearColor(0x202130, 1);
@@ -909,14 +921,17 @@ let car1 = 5;
 let car2 = 2;
 let timeStop = 0;
 let bufferx = 0;
+let pillarPass = [false, false, false, false];
+let countPillars = 0;
 
 const tick = () => {
-    stats.begin();
+    // stats.begin();
     const elapsedTime = clock.getElapsedTime();
     const deltaTime = elapsedTime - oldElapsedTime;
     oldElapsedTime = elapsedTime;
     if (gravityFlag) {
         // Update physics world
+        world.step(1 / 60, deltaTime, 3);
 
         if (pillar1Mesh) {
             if (
@@ -929,7 +944,45 @@ const tick = () => {
                 createPillars2();
             }
         }
-        world.step(1 / 60, deltaTime, 3);
+
+        if (pillar1Mesh) {
+            if (pillar1Body.position.x < camera.position.x && !pillarPass[0]) {
+                countPillars++;
+                console.log(countPillars);
+                pillarPass[0] = true;
+            }
+            if (pillar1Body.position.x > camera.position.x && pillarPass[0]) {
+                pillarPass[0] = false;
+            }
+        }
+        if (pillar2Mesh) {
+            if (pillar2Body.position.x < camera.position.x && !pillarPass[1]) {
+                countPillars++;
+                pillarPass[1] = true;
+            }
+            if (pillar2Body.position.x > camera.position.x && pillarPass[1]) {
+                pillarPass[1] = false;
+            }
+        }
+        if (pillar3Mesh) {
+            if (pillar3Body.position.x < camera.position.x && !pillarPass[2]) {
+                countPillars++;
+                pillarPass[2] = true;
+            }
+            if (pillar3Body.position.x > camera.position.x && pillarPass[2]) {
+                pillarPass[2] = false;
+            }
+        }
+        if (pillar4Mesh) {
+            if (pillar4Body.position.x < camera.position.x && !pillarPass[3]) {
+                countPillars++;
+                pillarPass[3] = true;
+            }
+            if (pillar4Body.position.x > camera.position.x && pillarPass[3]) {
+                pillarPass[3] = false;
+            }
+        }
+
         birdBody.velocity.y -= 30 * deltaTime;
         // console.log(gravityFlag);
 
@@ -1003,6 +1056,8 @@ const tick = () => {
 
         seaMesh.position.x = camera.position.x;
 
+        score.innerHTML = countPillars;
+
         // Update light
         // directionalLight.position.x += deltaTime * parameters.speed;
         // directionalLight.target.position.x += deltaTime * parameters.speed;
@@ -1060,11 +1115,11 @@ const tick = () => {
             scene.remove(pillar3Mesh, pillar4Mesh);
         }
         gravityFlag = false;
+        replayScreen.style.display = 'flex';
     }
-    stats.end();
+    // stats.end();
 };
-let flag = 0;
 
 tick();
 
-// 900 lines!
+// 1000 lines!
