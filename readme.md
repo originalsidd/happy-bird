@@ -21,7 +21,7 @@
   <h3 align="center">Happy Bird</h3>
 
   <p align="center">
-    3D Version the famous game about flying birds and dodging pillars
+    3D Version of the famous game about flying birds and dodging pillars
     <br />
     <a href="https://happy-bird.vercel.app/"><strong>Explore the game »</strong></a>
     <br />
