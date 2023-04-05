@@ -111,4 +111,4 @@ Project Link: [https://github.com/originalsidd/happy-bird](https://github.com/or
 [issues-url]: https://github.com/originalsidd/happy-bird/issues
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/siddharthpal20
-[product-screenshot]: static/images/screenshot.png
+[product-screenshot]: static/images/Screenshot.png
