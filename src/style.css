@@ -54,6 +54,8 @@ body
 .main {
     font-size: 100px;
     color:rgba(0,0,0,1);
+    text-align: center;
+    line-height: 1em;
 }
 
 .sub {   
@@ -68,11 +70,70 @@ body
     
 }
 
-.score {
+#score {
     position: absolute;
-    font-size: 30px;
+    font-size: 50px;
     color:rgba(255, 255, 255, 0.8);
-    right: 5px;
+    right: 10px;
     top: 5px;
     z-index: 999;
+}
+
+#max-score {
+    position: absolute;
+    font-size: 50px;
+    color:rgba(255, 255, 255, 0.8);
+    left: 10px;
+    top: 5px;
+    z-index: 999;
+}
+
+.scoreboard {
+    display: flex;
+    flex-direction: row;
+    background-color: #fff;
+    border-radius: 20px;
+    font-size: 50px;
+    padding: 10px;
+    margin: 10px;
+    gap: 10px;
+}
+
+#foot {
+    position: absolute;
+    width: 100%;
+    bottom: 10px;
+    text-align: center;
+    font-size: 10px;
+    color:rgba(255, 255, 255, 0.7);
+}
+
+#contact1 {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    font-size: 20px;
+}
+
+#contact2 {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    font-size: 20px;
+}
+
+a:link {
+    color: rgba(255, 255, 255, 0.5)
+}
+
+a:visited {
+    color: rgba(255, 255, 255, 0.5)
+}
+
+.by {
+    color:rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 20px;
 }

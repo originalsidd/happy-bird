@@ -12,7 +12,10 @@ import * as CANNON from 'cannon-es';
 const playScreen = document.querySelector('.play');
 const replayScreen = document.querySelector('.replay');
 const btn = document.querySelector('.button');
-const score = document.querySelector('.score');
+const score = document.querySelector('#score');
+const count = document.querySelector('#count');
+const maxCount = document.querySelector('#max-score');
+const footer = document.querySelector('#foot');
 
 /**
  * FPS Panel
@@ -328,6 +331,7 @@ gltfLoader.load('/models/road/road1.glb', (glb) => {
  * Sounds
  */
 // const hitSound = new Audio('/sounds/hit.mp3');
+const ambientSound = new Audio('/sounds/happy-bird.mp3');
 
 /**
  * Textures
@@ -395,14 +399,40 @@ const camera = new THREE.PerspectiveCamera(
     0.1,
     5000
 );
-const camDist = window.innerWidth < 800 ? 40 : 15;
+let camDist = screen.orientation.type == 'portrait-primary' ? 50 : 15;
 camera.position.set(0, 0, camDist);
 scene.add(camera);
+
+screen.orientation.addEventListener('change', (e) => {
+    if (e.target.type === 'portrait-primary') {
+        camDist = 50;
+    } else {
+        camDist = 12;
+    }
+    camera.position.set(0, 0, camDist);
+});
 
 // Controls
 let controls;
 // controls = new OrbitControls(camera, canvas);
 // controls.enableDamping = true;
+
+/**
+ * Quotes
+ */
+const quotes = [
+    `"You can't be happy unless you're unhappy sometimes." - Lauren Oliver`,
+    `"We don’t even ask happiness, just a little less pain." - Charles Bukowski`,
+    `"Happiness is when what you think, what you say, and what you do are in harmony." - Mahatma Gandhi`,
+    `"The greater part of our happiness or misery depends upon our dispositions, and not upon our circumstances." - Martha Washington`,
+    `"Happiness is not something ready made. It comes from your own actions." - Dalai Lama Xiv`,
+    `"The best way to cheer yourself is to try to cheer someone else up." - Mark Twain`,
+    `"You cannot protect yourself from sadness without protecting yourself from happiness." - Jonathan Safran Foer`,
+    `"Happiness is like those palaces in fairytales whose gates are guarded by dragons We must fight in order to conquer it." - Alexandre Dumas`,
+    `"Now and then it's good to pause in our pursuit of happiness and just be happy." - Guillaume Apollinaire`,
+    `"Happiness is not the absence of problems, it's the ability to deal with them." - Steve Maraboli, Life, The Truth, And Being Free`,
+    '"Be Happy." - Happy Bird',
+];
 
 /**
  * Skybox
@@ -537,7 +567,7 @@ scene.add(seaMesh);
 // scene.add(ceilMesh);
 
 const ceilPole = new THREE.Mesh(
-    new THREE.BoxGeometry(50, 2.5, 0.1, 1, 1, 1),
+    new THREE.BoxBufferGeometry(50, 2.5, 0.1, 1, 1, 1),
     new THREE.MeshStandardMaterial({
         color: '#222',
         metalness: 0.2,
@@ -547,6 +577,18 @@ const ceilPole = new THREE.Mesh(
 ceilPole.rotation.x = Math.PI * 0.5;
 ceilPole.position.set(0, parameters.ceilHeight, 0);
 scene.add(ceilPole);
+
+const bufferMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(50, 10, 1, 1),
+    new THREE.MeshStandardMaterial({
+        color: '#000',
+        metalness: 0.2,
+        roughness: 0.8,
+    })
+);
+// bufferMesh.rotation.x = Math.PI * 0.5;
+bufferMesh.position.set(0, -15, 24);
+scene.add(bufferMesh);
 
 /**
  * Pillars
@@ -614,25 +656,50 @@ let pillar2Height = 0;
 let pillar3Height = 0;
 let pillar4Height = 0;
 
-// Pillar generation
-const createPillars = () => {
-    // Refresh pillars
+// cleaner function
+
+const cleanPillar1 = () => {
     if (pillar1Mesh || pillar2Mesh || pillar1Body || pillar2Body) {
         // Cannon.js
         pillar1Body.shapes = [];
         pillar2Body.shapes = [];
         pillar1Body.updateMassProperties();
         pillar2Body.updateMassProperties();
-        world.removeBody(pillar1Body);
-        world.removeBody(pillar2Body);
         pillar1Body.removeEventListener('collide', stop);
         pillar2Body.removeEventListener('collide', stop);
+        world.removeBody(pillar1Body);
+        world.removeBody(pillar2Body);
 
         // Three.js
         pillar1Geometry?.dispose();
         pillar2Geometry?.dispose();
         scene.remove(pillar1Mesh, pillar2Mesh);
     }
+};
+
+const cleanPillar2 = () => {
+    if (pillar3Mesh || pillar4Mesh || pillar3Body || pillar4Body) {
+        // Cannon.js
+        pillar3Body.shapes = [];
+        pillar4Body.shapes = [];
+        pillar3Body.updateMassProperties();
+        pillar4Body.updateMassProperties();
+        pillar3Body.removeEventListener('collide', stop);
+        pillar4Body.removeEventListener('collide', stop);
+        world.removeBody(pillar3Body);
+        world.removeBody(pillar4Body);
+
+        // Three.js
+        pillar3Geometry?.dispose();
+        pillar4Geometry?.dispose();
+        scene.remove(pillar3Mesh, pillar4Mesh);
+    }
+};
+
+// Pillar generation
+const createPillars = () => {
+    // Refresh pillars
+    cleanPillar1();
 
     // Pillar Heights
     pillar1Height = 1 + Math.random() * parameters.pillarWindow;
@@ -686,22 +753,7 @@ const createPillars = () => {
 
 const createPillars2 = () => {
     // Refresh pillars
-    if (pillar3Mesh || pillar4Mesh || pillar3Body || pillar4Body) {
-        // Cannon.js
-        pillar3Body.shapes = [];
-        pillar4Body.shapes = [];
-        pillar3Body.updateMassProperties();
-        pillar4Body.updateMassProperties();
-        world.removeBody(pillar3Body);
-        world.removeBody(pillar4Body);
-        pillar3Body.removeEventListener('collide', stop);
-        pillar4Body.removeEventListener('collide', stop);
-
-        // Three.js
-        pillar3Geometry?.dispose();
-        pillar4Geometry?.dispose();
-        scene.remove(pillar3Mesh, pillar4Mesh);
-    }
+    cleanPillar2();
 
     // Pillar Heights
     pillar3Height = 1 + Math.random() * parameters.pillarWindow;
@@ -751,20 +803,11 @@ const createPillars2 = () => {
     world.addBody(pillar4Body);
 };
 
-// Initial pillar generation
-// setTimeout(() => {
-//     createPillars();
-// }, 5000);
-
 /**
  * Lights
  */
 const ambientLight = new THREE.AmbientLight(0xffffff, 1);
 scene.add(ambientLight);
-
-// const light = new THREE.PointLight(0xffff88, 4, 100);
-// light.position.set(0, 45, -20);
-// scene.add(light);
 
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
 directionalLight.castShadow = true;
@@ -778,11 +821,6 @@ directionalLight.position.set(10, 100, 50);
 directionalLight.target.position.set(0, 0, 0);
 scene.add(directionalLight);
 scene.add(directionalLight.target);
-
-// const directionalLightHelper = new THREE.DirectionalLightHelper(
-//     directionalLight
-// );
-// scene.add(directionalLightHelper);
 
 /**
  * Renderer
@@ -850,9 +888,6 @@ const jumpButton = () => {
     if (bool) {
         playScreen.style.display = 'none';
         if (!gravityFlag) {
-            // fun = setTimeout(() => {
-            //     createPillars();
-            // }, 2000);
             bufferx = 30;
             createPillars();
             bufferx = 0;
@@ -860,6 +895,12 @@ const jumpButton = () => {
         birdGltfMesh.rotation.z = 0.6;
         birdBody.velocity.y = parameters.jumpVelocity;
         gravityFlag = true;
+        if (!loadFlag) {
+            ambientSound.volume = 0.5;
+            ambientSound.loop = true;
+            ambientSound.play();
+            loadFlag = true;
+        }
     }
 };
 
@@ -870,17 +911,22 @@ const restartButton = () => {
         birdBody.velocity.y = 0;
         birdBody.position.x = camera.position.x;
         birdGltfMesh.position.x = camera.position.x;
-        // clearTimeout(fun);
+        pillarFlag = [true, true];
+        countPillars = 0;
+        score.innerHTML = countPillars;
         bufferx = 50;
         tick();
         bufferx = 0;
         replayScreen.style.display = 'none';
         playScreen.style.display = 'flex';
+        cleanPillar1();
+        cleanPillar2();
     }
 };
 
 document.body.onkeyup = (e) => {
     if (e.keyCode == 32) {
+        restartButton();
         jumpButton();
     }
     if (e.keyCode == 'R'.charCodeAt(0)) {
@@ -921,8 +967,10 @@ let car1 = 5;
 let car2 = 2;
 let timeStop = 0;
 let bufferx = 0;
-let pillarPass = [false, false, false, false];
+let pillarFlag = [true, true];
 let countPillars = 0;
+let maxcount = 0;
+let loadFlag = false;
 
 const tick = () => {
     // stats.begin();
@@ -933,7 +981,7 @@ const tick = () => {
         // Update physics world
         world.step(1 / 60, deltaTime, 3);
 
-        if (pillar1Mesh) {
+        if (pillar1Body) {
             if (
                 pillar1Body.position.x <
                 camera.position.x - parameters.boundary
@@ -945,41 +993,24 @@ const tick = () => {
             }
         }
 
-        if (pillar1Mesh) {
-            if (pillar1Body.position.x < camera.position.x && !pillarPass[0]) {
-                countPillars++;
-                console.log(countPillars);
-                pillarPass[0] = true;
-            }
-            if (pillar1Body.position.x > camera.position.x && pillarPass[0]) {
-                pillarPass[0] = false;
+        if (pillar1Body) {
+            if (pillarFlag[0] && pillar1Body.position.x < camera.position.x) {
+                countPillars = countPillars + 1;
+                pillarFlag[0] = false;
+            } else if (pillar1Body.position.x > camera.position.x) {
+                pillarFlag[0] = true;
             }
         }
-        if (pillar2Mesh) {
-            if (pillar2Body.position.x < camera.position.x && !pillarPass[1]) {
-                countPillars++;
-                pillarPass[1] = true;
-            }
-            if (pillar2Body.position.x > camera.position.x && pillarPass[1]) {
-                pillarPass[1] = false;
-            }
-        }
-        if (pillar3Mesh) {
-            if (pillar3Body.position.x < camera.position.x && !pillarPass[2]) {
-                countPillars++;
-                pillarPass[2] = true;
-            }
-            if (pillar3Body.position.x > camera.position.x && pillarPass[2]) {
-                pillarPass[2] = false;
-            }
-        }
-        if (pillar4Mesh) {
-            if (pillar4Body.position.x < camera.position.x && !pillarPass[3]) {
-                countPillars++;
-                pillarPass[3] = true;
-            }
-            if (pillar4Body.position.x > camera.position.x && pillarPass[3]) {
-                pillarPass[3] = false;
+        if (pillar3Body) {
+            if (
+                pillarFlag[1] &&
+                pillar3Body.position.x < camera.position.x &&
+                countPillars > 0
+            ) {
+                countPillars = countPillars + 1;
+                pillarFlag[1] = false;
+            } else if (pillar3Body.position.x > camera.position.x) {
+                pillarFlag[1] = true;
             }
         }
 
@@ -1020,6 +1051,12 @@ const tick = () => {
             pillar1Mesh.position.copy(pillar1Body.position);
             pillar2Mesh.position.copy(pillar2Body.position);
         }
+        if (pillar3Mesh) {
+            pillar3Body.position.z = 0;
+            pillar4Body.position.z = 0;
+            pillar3Mesh.position.copy(pillar3Body.position);
+            pillar4Mesh.position.copy(pillar4Body.position);
+        }
         if (birdGltfMesh) {
             birdGltfMesh.position.copy(birdBody.position);
             birdGltfMesh.rotation.z -= deltaTime * 0.7;
@@ -1051,21 +1088,10 @@ const tick = () => {
 
         // Update Skybox
         skybox.position.x = camera.position.x;
-
         ceilPole.position.x = camera.position.x;
-
         seaMesh.position.x = camera.position.x;
-
+        bufferMesh.position.x = camera.position.x;
         score.innerHTML = countPillars;
-
-        // Update light
-        // directionalLight.position.x += deltaTime * parameters.speed;
-        // directionalLight.target.position.x += deltaTime * parameters.speed;
-
-        // Render
-        // if (birdBody.position.y < parameters.floorHeight + 0.1) {
-        //     bool = false;
-        // }
     }
     renderer.render(scene, camera);
 
@@ -1076,45 +1102,18 @@ const tick = () => {
     if (bool) window.requestAnimationFrame(tick);
     else {
         timeStop = clock.getElapsedTime();
-        world.removeBody(birdBody);
-        world.addBody(birdBody);
+        renderer.renderLists.dispose();
         birdBody.velocity.y = 0;
         birdMesh.position.set(timeStop * parameters.speed, 0, 0);
         birdBody.position.copy(birdMesh.position);
         birdGltfMesh.position.copy(birdMesh.position);
-        if (pillar1Mesh || pillar2Mesh || pillar1Body || pillar2Body) {
-            // Cannon.js
-            pillar1Body.shapes = [];
-            pillar2Body.shapes = [];
-            pillar1Body.updateMassProperties();
-            pillar2Body.updateMassProperties();
-            pillar1Body.removeEventListener('collide', stop);
-            pillar2Body.removeEventListener('collide', stop);
-            world.removeBody(pillar1Body);
-            world.removeBody(pillar2Body);
-
-            // Three.js
-            pillar1Geometry?.dispose();
-            pillar2Geometry?.dispose();
-            scene.remove(pillar1Mesh, pillar2Mesh);
-        }
-        if (pillar3Mesh || pillar4Mesh || pillar3Body || pillar4Body) {
-            // Cannon.js
-            pillar3Body.shapes = [];
-            pillar4Body.shapes = [];
-            pillar3Body.updateMassProperties();
-            pillar4Body.updateMassProperties();
-            pillar3Body.removeEventListener('collide', stop);
-            pillar4Body.removeEventListener('collide', stop);
-            world.removeBody(pillar3Body);
-            world.removeBody(pillar4Body);
-
-            // Three.js
-            pillar3Geometry?.dispose();
-            pillar4Geometry?.dispose();
-            scene.remove(pillar3Mesh, pillar4Mesh);
-        }
+        cleanPillar1();
+        cleanPillar2();
         gravityFlag = false;
+        count.innerHTML = countPillars;
+        maxcount = Math.max(maxcount, countPillars);
+        maxCount.innerHTML = maxcount;
+        footer.innerHTML = quotes[parseInt(Math.random() * 10)];
         replayScreen.style.display = 'flex';
     }
     // stats.end();
