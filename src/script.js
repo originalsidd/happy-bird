@@ -16,6 +16,26 @@ const score = document.querySelector('#score');
 const count = document.querySelector('#count');
 const maxCount = document.querySelector('#max-score');
 const footer = document.querySelector('#foot');
+const progress = document.querySelector('.progress-fill');
+const bar = document.querySelector('.progress-bar');
+const prog = document.querySelector('.prog');
+
+/**
+ * Loading Manager
+ */
+var manager = new THREE.LoadingManager();
+let loaded = false;
+
+manager.onProgress = (url, itemsLoaded, itemsTotal) => {
+    progress.style.width = (itemsLoaded / itemsTotal) * 100 + '%';
+    prog.innerHTML = ' ' + parseInt((itemsLoaded / itemsTotal) * 100) + '%';
+};
+
+manager.onLoad = (url, itemsLoaded, itemsTotal) => {
+    bar.style.display = 'none';
+    prog.style.display = 'none';
+    loaded = true;
+};
 
 /**
  * FPS Panel
@@ -64,13 +84,14 @@ const canvas = document.querySelector('canvas.webgl');
 
 // Scene
 const scene = new THREE.Scene();
-const textureLoader = new THREE.TextureLoader();
+const textureLoader = new THREE.TextureLoader(manager);
 
 /**
  * Models
  */
-const gltfLoader = new GLTFLoader();
-const mtlLoader = new MTLLoader();
+const gltfLoader = new GLTFLoader(manager);
+const mtlLoader = new MTLLoader(manager);
+const objloader = new OBJLoader(manager);
 let birdGltfMesh = null;
 let car_sedan = null;
 let car_wagon = null;
@@ -105,7 +126,6 @@ const pipeTexture4 = textureLoader.load(
 );
 
 mtlLoader.load('/models/city2/City block.mtl', (materials) => {
-    const objloader = new OBJLoader();
     materials.preload();
     objloader.setMaterials(materials);
     objloader.load('/models/city2/City block.obj', (obj) => {
@@ -143,7 +163,6 @@ const car_metal = textureLoader.load('/textures/cars/VehiclePack_Metalnes.png');
 const car_rough = textureLoader.load('/textures/cars/VehiclePack_Roughnes.png');
 
 mtlLoader.load('/models/cars/Sedan_A_beige.mtl', (materials) => {
-    const objloader = new OBJLoader();
     materials.preload();
     objloader.setMaterials(materials);
     objloader.load('/models/cars/Sedan_A_beige.obj', (obj) => {
@@ -165,7 +184,6 @@ mtlLoader.load('/models/cars/Sedan_A_beige.mtl', (materials) => {
 });
 
 mtlLoader.load('/models/cars/Hatch_C_beige.mtl', (materials) => {
-    const objloader = new OBJLoader();
     materials.preload();
     objloader.setMaterials(materials);
     objloader.load('/models/cars/Hatch_C_beige.obj', (obj) => {
@@ -798,29 +816,39 @@ const restartButton = () => {
 };
 
 document.body.onkeyup = (e) => {
-    if (e.keyCode == 32) {
-        restartButton();
-        jumpButton();
-    }
-    if (e.keyCode == 'R'.charCodeAt(0)) {
-        restartButton();
+    if (loaded) {
+        if (e.keyCode == 32) {
+            restartButton();
+            jumpButton();
+        }
+        if (e.keyCode == 'R'.charCodeAt(0)) {
+            restartButton();
+        }
     }
 };
 
 window.addEventListener('click', () => {
-    jumpButton();
+    if (loaded) {
+        jumpButton();
+    }
 });
 
 parameters.jump = () => {
-    jumpButton();
+    if (loaded) {
+        jumpButton();
+    }
 };
 
 parameters.restart = () => {
-    restartButton();
+    if (loaded) {
+        restartButton();
+    }
 };
 
 btn.onclick = () => {
-    restartButton();
+    if (loaded) {
+        restartButton();
+    }
 };
 
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
