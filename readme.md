@@ -19,7 +19,7 @@
   <p align="center">
     3D Version the famous game about flying birds and dodging pillars
     <br />
-    <a href="https://github.com/originalsidd/happy-bird"><strong>Explore the game »</strong></a>
+    <a href="https://happy-bird.vercel.app/"><strong>Explore the game »</strong></a>
     <br />
     <br />
     <a href="https://github.com/othneildrew/Best-README-Template/issues">Report Bug</a>
@@ -53,7 +53,7 @@ This project is built with:
 
 ## Getting Started
 
-Visit the live demo:
+Visit the live demo: https://happy-bird.vercel.app/
 
 Follow the below steps to reproduce the code base locally.
 

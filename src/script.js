@@ -74,29 +74,11 @@ const mtlLoader = new MTLLoader();
 let birdGltfMesh = null;
 let car_sedan = null;
 let car_wagon = null;
-let roadMesh = null;
-let cityMesh = null;
-// let lightMesh = null;
-let bgcityMesh = null;
 let terraceMesh = [null, null, null];
 let buildMesh = [null, null];
-// let treeMesh = null;
 let mixer = null;
 let helper = null;
 
-// gltfLoader.load('/models/crow/scene.gltf', (gltf) => {
-//     birdGltfMesh = gltf.scene;
-//     mixer = new THREE.AnimationMixer(birdGltfMesh);
-//     const action = mixer.clipAction(gltf.animations[0]);
-//     // action.setDuration(1);
-//     action.play();
-//     // action.startAt(-7);
-//     birdGltfMesh.scale.set(0.025, 0.025, 0.025);
-//     birdGltfMesh.rotation.y = Math.PI * 0.5;
-//     // console.log(birdMesh.position, birdGltfMesh.position);
-//     birdGltfMesh.castShadow = true;
-//     scene.add(birdGltfMesh);
-// });
 let action = null;
 gltfLoader.load('/models/crow/bird.glb', (glb) => {
     birdGltfMesh = glb.scene;
@@ -109,37 +91,6 @@ gltfLoader.load('/models/crow/bird.glb', (glb) => {
     scene.add(birdGltfMesh);
 });
 
-// gltfLoader.load('/models/tree/tree.glb', (glb) => {
-//     treeMesh = glb.scene;
-//     treeMesh.scale.set(2, 2, 2);
-//     treeMesh.position.y = -10;
-//     treeMesh.castShadow = true;
-//     scene.add(treeMesh);
-// });
-
-// gltfLoader.load('/models/road/uploads_files_3624686_11.glb', (glb) => {
-//     roadMesh = glb.scene;
-//     roadMesh.scale.set(15, 15, 15);
-//     let r = 60;
-//     roadMesh.rotation.y = Math.PI + 0.003;
-//     roadMesh.position.set(r * -50, r * -12.07, r * -33.6);
-//     scene.add(roadMesh);
-// });
-
-const cityTexture1 = textureLoader.load('/textures/city/ang1.jpg');
-const cityTexture2 = textureLoader.load('/textures/city/cty1.jpg');
-const cityTexture3 = textureLoader.load('/textures/city/cty2x.jpg');
-const windowTexture = textureLoader.load('/textures/window/window.png');
-
-// const pipeTexture1 = textureLoader.load(
-//     '/textures/pipe/RustPlain007_COL_VAR1_1K.jpg'
-// );
-// const pipeTexture2 = textureLoader.load(
-//     '/textures/pipe/RustPlain007_NRM_1K.jpg'
-// );
-// const pipeTexture3 = textureLoader.load(
-//     '/textures/pipe/RustPlain007_GLOSS_1K.jpg'
-// );
 const pipeTexture1 = textureLoader.load(
     '/textures/pipe2/MetalCorrodedHeavy001_COL_1K_METALNESS.jpg'
 );
@@ -152,20 +103,6 @@ const pipeTexture3 = textureLoader.load(
 const pipeTexture4 = textureLoader.load(
     '/textures/pipe2/MetalCorrodedHeavy001_METALNESS_1K_METALNESS.jpg'
 );
-
-// objloader.load('/models/road/city.obj', (obj) => {
-//     cityMesh = obj;
-//     console.log(cityMesh);
-//     cityMesh.children[0].material[0].map = cityTexture2;
-//     cityMesh.children[0].material[1].map = cityTexture1;
-//     cityMesh.children[1].material.map = cityTexture2;
-//     cityMesh.children[2].material.transparent = 1;
-//     cityMesh.position.y = -50;
-//     cityMesh.position.x = 100;
-//     // cityMesh.rotation.y = Math.PI;
-//     cityMesh.scale.set(0.4, 0.4, 0.4);
-//     scene.add(cityMesh);
-// });
 
 mtlLoader.load('/models/city2/City block.mtl', (materials) => {
     const objloader = new OBJLoader();
@@ -282,51 +219,6 @@ gltfLoader.load('/models/road/road1.glb', (glb) => {
     scene.add(terraceMesh[2]);
 });
 
-// mtlLoader.load('/models/floor/floor.mtl', (materials) => {
-//     const objloader = new OBJLoader();
-//     materials.preload();
-//     objloader.setMaterials(materials);
-//     objloader.load('/models/floor/floor.obj', (obj) => {
-//         terraceMesh[0] = obj;
-//         terraceMesh[0].children.forEach((child) => {
-//             child.material.map = cityTexture1;
-//             child.receiveShadow = true;
-//         });
-//         terraceMesh[0].scale.set(0.05, 0.05, 0.05);
-//         terraceMesh[0].position.z = -45;
-//         terraceMesh[0].position.x = -30;
-//         terraceMesh[0].position.y = -29.5;
-//         terraceMesh[0].receiveShadow = true;
-//         scene.add(terraceMesh[0]);
-//     });
-//     objloader.load('/models/floor/floor.obj', (obj) => {
-//         terraceMesh[1] = obj;
-//         terraceMesh[1].children.forEach((child) => {
-//             child.material.map = cityTexture1;
-//             child.receiveShadow = true;
-//         });
-//         terraceMesh[1].scale.set(0.05, 0.05, 0.05);
-//         terraceMesh[1].position.z = -45;
-//         terraceMesh[1].position.x = -30 + 95;
-//         terraceMesh[1].position.y = -29.5;
-//         terraceMesh[1].receiveShadow = true;
-//         scene.add(terraceMesh[1]);
-//     });
-//     objloader.load('/models/floor/floor.obj', (obj) => {
-//         terraceMesh[2] = obj;
-//         terraceMesh[2].children.forEach((child) => {
-//             child.material.map = cityTexture1;
-//             child.receiveShadow = true;
-//         });
-//         terraceMesh[2].scale.set(0.05, 0.05, 0.05);
-//         terraceMesh[2].position.z = -45;
-//         terraceMesh[2].position.x = -30 + 190;
-//         terraceMesh[2].position.y = -29.5;
-//         terraceMesh[2].receiveShadow = true;
-//         scene.add(terraceMesh[2]);
-//     });
-// });
-
 /**
  * Sounds
  */
@@ -369,25 +261,6 @@ window.addEventListener('resize', () => {
     renderer.setSize(sizes.width, sizes.height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
-
-// window.addEventListener('', () => {
-//     const fullscreenElement =
-//         document.fullscreenElement || document.webkitFullscreenElement;
-
-//     if (!fullscreenElement) {
-//         if (canvas.requestFullscreen) {
-//             canvas.requestFullscreen();
-//         } else if (canvas.webkitRequestFullscreen) {
-//             canvas.webkitRequestFullscreen();
-//         }
-//     } else {
-//         if (document.exitFullscreen) {
-//             document.exitFullscreen();
-//         } else if (document.webkitExitFullscreen) {
-//             document.webkitExitFullscreen();
-//         }
-//     }
-// });
 
 /**
  * Camera
