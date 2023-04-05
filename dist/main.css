@@ -138,4 +138,34 @@ a:visited {
     border-radius: 20px;
 }
 
+.progress-bar {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(255,255,255,1);
+    border: 2px solid white;
+}
+
+.progress-fill {
+    position: absolute;
+    height: 100%;
+    width: 0%;
+    background: rgb(203, 255, 92);
+    background: linear-gradient(90deg,
+            rgb(203, 255, 92,1) 0%,
+            rgb(253, 236, 45,1) 100%);
+}
+
+.prog {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 25%;
+    font-size: 30px;
+    color: coral;
+    z-index: 1000;
+}
+
 /*# sourceMappingURL=main.css.map*/

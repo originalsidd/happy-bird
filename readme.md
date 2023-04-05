@@ -105,7 +105,6 @@ Project Link: [https://github.com/originalsidd/happy-bird](https://github.com/or
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
 [forks-shield]: https://img.shields.io/github/forks/originalsidd/happy-bird?style=for-the-badge
 [forks-url]: https://github.com/originalsidd/happy-bird/network/members
