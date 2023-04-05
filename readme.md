@@ -98,7 +98,7 @@ The controls for the app:
 
 ## Contact
 
-Your Name - [@originalsidd\_](https://www.instagram.com/originalsidd_) - originalsidd@gmail.com
+Siddharth Pal - [@originalsidd\_](https://www.instagram.com/originalsidd_) - originalsidd@gmail.com
 
 Project Link: [https://github.com/originalsidd/happy-bird](https://github.com/originalsidd/happy-bird)
 
